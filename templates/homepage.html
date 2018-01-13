@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+	<title>RaspberryPi</title>
+	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+</head>
+<body>
+<h1>omxplayer</h1>
+
+{% if queue %}
+	<span class="text-success">File d'attente : </span>
+	{% for my_q in queue %}
+		{% set str2 = my_q.split('/') %}
+		<button type="button" class="btn btn-success">{{ str2[-1] }}</button>
+	{% endfor %}
+
+	<script>
+		$('button.btn').hover(function(){
+			this.setAttribute('data-text', this.innerHTML)
+			this.innerHTML = 'Delete'
+			$( this ).removeClass('btn-success')
+			$( this ).addClass('btn-danger')
+		}, function() {
+			this.innerHTML = this.getAttribute('data-text')
+			$( this ).removeClass('btn-danger')
+			$( this ).addClass('btn-success')
+		})
+
+		$('button.btn').on('click', function() {
+			window.location.href = '/remove-from-queue/' + this.getAttribute('data-text')
+		})
+	</script>
+{% else %}
+	<span class="text-danger">File d'attente vide</span>
+{% endif %}
+
+<ul class="nav nav-tabs">
+  <li role="presentation" class="{% if not custom_path %}active{% endif %}"><a href="/">Songs</a></li>
+  <li role="presentation" class="{% if custom_path == 'xxx' %}active{% endif %}"><a href="/xxx">XXX</a></li>
+</ul>
+
+<div class="container-fluid">
+	<div class="row">
+		{% for file in files %}
+			<div class="col-md-4">
+			
+			{% set list1 = file.split('.') %}
+			{% set str1 = ".".join(list1[:-1]) %}
+			{% if custom_path %}
+				<a href="/{{ custom_path }}/read/{{ str1 }}/{{ list1[-1]  }}">{{ file }}</a>
+			{% else %}
+				<a href="/read/{{ str1 }}/{{ list1[-1]  }}">{{ file }}</a>
+			{% endif %}
+			</div>
+		{%endfor%}
+	</div>
+</div>
+</body>
+</html>
