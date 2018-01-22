@@ -3,6 +3,7 @@ from flask import Flask
 from flask import render_template, redirect
 import subprocess
 from config import path, paths, omxplayer, db
+from random import shuffle
 
 app = Flask(__name__)
 
@@ -58,3 +59,33 @@ def remove_from_queue(filename_complete):
             if filename_complete not in command:
                 my_file.write(command)
     return redirect("/")
+
+@app.route("/play-all/<custom_path>")
+def playall_custom(custom_path):
+    path = paths[custom_path]
+    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    onlyfiles.sort()
+
+    with open(db, 'a+') as my_file:
+        for filename in onlyfiles:
+            my_file.write('{omxplayer} {path}{file}\n'.format(
+                omxplayer=omxplayer,
+                path=path,
+                file=filename))
+
+    return redirect("/{}".format(custom_path))
+
+@app.route("/play-random/<custom_path>")
+def playrandom_custom(custom_path):
+    path = paths[custom_path]
+    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    shuffle(onlyfiles)
+
+    with open(db, 'a+') as my_file:
+        for filename in onlyfiles:
+            my_file.write('{omxplayer} {path}{file}\n'.format(
+                omxplayer=omxplayer,
+                path=path,
+                file=filename))
+
+    return redirect("/{}".format(custom_path))
