@@ -1,12 +1,26 @@
 import os
 import subprocess
 import time
+import sqlite3
+import datetime
 from config import db
 
 
 current_command = False
 current_pid = False
 commands = []
+
+def add_history(line):
+    conn = sqlite3.connect('/run/omxplayer-flask/sqlite3.db')
+    c = conn.cursor()
+    filename = line.split('/')[-1]
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS history (date text, filename text) """)
+    c.execute("""
+    INSERT INTO history VALUES ('{}', '{}')""".format(datetime.datetime.now(), filename))
+    conn.commit()
+    conn.close()
+
 
 while True:
     if not current_pid:
@@ -20,19 +34,20 @@ while True:
     else:
         poll = my_process.poll()
         if poll == None:
-	    pass
+            pass
             #print('Still Executing "{} : {}"'.format(current_command, current_pid))
         else:
             #print('End detected')
             current_pid = False
             current_command = False
-	    with open(db, 'r') as my_file:
-	        commands = my_file.readlines()
+            with open(db, 'r') as my_file:
+                commands = my_file.readlines()
             with open(db, 'w') as my_file:
                 firstLine = True
                 for my_command in commands:
                     if firstLine:
                         firstLine = False
+                        add_history(my_command)
                     else:
                         my_file.write(my_command)
     time.sleep(5)

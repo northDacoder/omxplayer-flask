@@ -2,16 +2,16 @@
 <html>
 <head>
 	<title>RaspberryPi</title>
-	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 
-	<!-- Latest compiled and minified CSS -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
-	<!-- Optional theme -->
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
-	<!-- Latest compiled and minified JavaScript -->
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </head>
 <body>
 <h1>omxplayer</h1>
@@ -26,7 +26,11 @@
 	<script>
 		$('button.btn').hover(function(){
 			this.setAttribute('data-text', this.innerHTML)
-			this.innerHTML = 'Delete'
+            var my_string = 'Delete'
+            for (var i = 0; i < this.innerHTML.length - 6; i = i + 2)  {
+                my_string = '_' + my_string + '_'
+            }
+			this.innerHTML = my_string
 			$( this ).removeClass('btn-success')
 			$( this ).addClass('btn-danger')
 		}, function() {
@@ -42,6 +46,38 @@
 {% else %}
 	<span class="text-danger">File d'attente vide</span>
 {% endif %}
+<br/>
+{% if history %}
+	<span class="text-warning">Historique : </span>
+	{% for my_q in history %}
+		<button type="button" class="btn btn-warning">{{ my_q }}</button>
+	{% endfor %}
+{% endif %}
+
+<!-- play all and play random -->
+<div>
+    <button data-text="{% if not custom_path %}songs{% else %}{{ custom_path }}{% endif %}" class="btn btn-info" id="button-play-all">Play all</button>
+    &nbsp;
+    <button data-text="{% if not custom_path %}songs{% else %}{{ custom_path }}{% endif %}"  class="btn btn-info" id="button-play-random">Play random</button>
+</div>
+
+<script>
+    $('#button-play-all').on('click', function() {
+        window.location.href = '/play-all/' + this.getAttribute('data-text')
+    })
+    $('#button-play-random').on('click', function() {
+        window.location.href = '/play-random/' + this.getAttribute('data-text')
+    })
+</script>
+<!-- END play all and play random -->
+
+<form method="POST" action="/play-pattern" >
+  <input type="hidden" name="custom_path" value="{{ custom_path }}" />
+  <div class="form-group">
+    <label for="labelPattern">Play pattern</label>
+    <input type="text" class="form-control" id="labelPattern" name="labelPattern" placeholder="crossed*" />
+  </div>
+</form>
 
 <ul class="nav nav-tabs">
   <li role="presentation" class="{% if not custom_path %}active{% endif %}"><a href="/">Songs</a></li>
