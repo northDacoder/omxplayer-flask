@@ -12,17 +12,21 @@ app = Flask(__name__)
 
 
 def get_queue():
-	with open(db, 'r') as my_file:
-		return my_file.readlines()
+    with open(db, 'r') as my_file:
+        return my_file.readlines()
 
-def get_last_histories():
+def get_last_histories(limit=10):
     conn = sqlite3.connect('/run/omxplayer-flask/sqlite3.db')
     c = conn.cursor()
     c.execute("""
     CREATE TABLE IF NOT EXISTS history (date text, filename text) """)
     conn.commit()
     result = []
-    for row in c.execute(""" SELECT filename FROM history order by date DESC  limit 5"""):
+    try:
+        limit = int(limit)
+    except ValueError:
+        limit = 10
+    for row in c.execute(""" SELECT filename FROM history order by date DESC  limit {}""".format(limit)):
         result.append(row[0])
     conn.close()
 
@@ -30,9 +34,9 @@ def get_last_histories():
 
 @app.route("/")
 def homepage():
-	onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
-	onlyfiles.sort()
-	return render_template('homepage.html', files=onlyfiles, queue=get_queue(), history=get_last_histories())
+    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    onlyfiles.sort()
+    return render_template('homepage.html', files=onlyfiles, queue=get_queue(), history=get_last_histories(request.args.get('limit', 10)))
 
 
 @app.route("/read/<filename>/<extension>")
@@ -53,7 +57,7 @@ def homepage_custom(custom_path):
         return redirect("/")
     onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     onlyfiles.sort()
-    return render_template('homepage.html', files=onlyfiles, custom_path=custom_path, queue=get_queue(), history=get_last_histories())
+    return render_template('homepage.html', files=onlyfiles, custom_path=custom_path, queue=get_queue(), history=get_last_histories(request.args.get('limit', 10)))
 
 
 @app.route("/<custom_path>/read/<filename>/<extension>")
