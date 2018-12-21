@@ -80,8 +80,9 @@
 </form>
 
 <ul class="nav nav-tabs">
-  <li role="presentation" class="{% if not custom_path %}active{% endif %}"><a href="/">Songs</a></li>
-  <li role="presentation" class="{% if custom_path == 'xxx' %}active{% endif %}"><a href="/xxx">XXX</a></li>
+  {% for my_path in paths %}
+    <li role="presentation" class="{% if custom_path and custom_path == my_path %}active{% endif %}"><a href="/{{ my_path }}">{{ my_path  }}</a></li>
+  {% endfor %}
 </ul>
 
 <div class="container-fluid">

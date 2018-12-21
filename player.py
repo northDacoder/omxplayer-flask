@@ -7,6 +7,7 @@ import sqlite3
 from config import path, paths, omxplayer, db
 from random import shuffle
 import re
+import collections
 
 app = Flask(__name__)
 
@@ -36,7 +37,7 @@ def get_last_histories(limit=10):
 def homepage():
     onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     onlyfiles.sort()
-    return render_template('homepage.html', files=onlyfiles, queue=get_queue(), history=get_last_histories(request.args.get('limit', 10)))
+    return render_template('homepage.html', paths=collections.OrderedDict(sorted(paths.items())), files=onlyfiles, queue=get_queue(), history=get_last_histories(request.args.get('limit', 10)))
 
 
 @app.route("/read/<filename>/<extension>")
@@ -57,7 +58,7 @@ def homepage_custom(custom_path):
         return redirect("/")
     onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
     onlyfiles.sort()
-    return render_template('homepage.html', files=onlyfiles, custom_path=custom_path, queue=get_queue(), history=get_last_histories(request.args.get('limit', 10)))
+    return render_template('homepage.html', paths=collections.OrderedDict(sorted(paths.items())), files=onlyfiles, custom_path=custom_path, queue=get_queue(), history=get_last_histories(request.args.get('limit', 10)))
 
 
 @app.route("/<custom_path>/read/<filename>/<extension>")
