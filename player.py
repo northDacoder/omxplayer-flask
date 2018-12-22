@@ -94,7 +94,7 @@ def remove_from_queue(filename_complete):
 @app.route("/play-all/<custom_path>")
 def playall_custom(custom_path):
     path = paths[custom_path]
-    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and extensions_white_list(f)]
+    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and extensions_white_list(f.split('.')[-1])]
     onlyfiles.sort()
 
     with open(db, 'a+') as my_file:
@@ -109,7 +109,7 @@ def playall_custom(custom_path):
 @app.route("/play-random/<custom_path>")
 def playrandom_custom(custom_path):
     path = paths[custom_path]
-    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and extensions_white_list(f)]
+    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and extensions_white_list(f.split('.')[-1])]
     shuffle(onlyfiles)
 
     with open(db, 'a+') as my_file:
@@ -126,7 +126,7 @@ def playpattern():
     custom_path = request.form['custom_path'] or 'songs'
     label_pattern =  request.form['labelPattern']
     path = paths[custom_path]
-    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and re.search(label_pattern ,f) and extensions_white_list(f)]
+    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and re.search(label_pattern ,f) and extensions_white_list(f.split('.')[-1])]
     onlyfiles.sort()
     with open(db, 'a+') as my_file:
         for filename in onlyfiles:
