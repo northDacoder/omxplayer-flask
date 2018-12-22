@@ -16,6 +16,11 @@ def get_queue():
     with open(db, 'r') as my_file:
         return my_file.readlines()
 
+def extensions_white_list(my_str_file: str) -> bool:
+    """ send only whitelist files to omxplayer """
+    white_list = ['mp4', 'avi', 'mkv', 'mp3', 'flac', 'wav']
+    return my_str_file.lower() in white_list
+
 def get_last_histories(limit=10):
     conn = sqlite3.connect('/run/omxplayer-flask/sqlite3.db')
     c = conn.cursor()
@@ -42,12 +47,13 @@ def homepage():
 
 @app.route("/read/<filename>/<extension>")
 def read_omxplayer(filename, extension):
-    with open(db, 'a+') as my_file:
-        my_file.write('{omxplayer} {path}{file}.{extension}\n'.format(
-            omxplayer=omxplayer,
-            path=path,
-            file=filename,
-            extension=extension))
+    if extensions_white_list(extension):
+        with open(db, 'a+') as my_file:
+            my_file.write('{omxplayer} {path}{file}.{extension}\n'.format(
+                omxplayer=omxplayer,
+                path=path,
+                file=filename,
+                extension=extension))
     return redirect("/")
 
 @app.route("/<custom_path>")
@@ -63,13 +69,14 @@ def homepage_custom(custom_path):
 
 @app.route("/<custom_path>/read/<filename>/<extension>")
 def read_omxplayer_custom(custom_path, filename, extension):
-    with open(db, 'a+') as my_file:
-        my_file.write('{omxplayer} {custom_path}{file}.{extension}\n'.format(
-            omxplayer=omxplayer,
-            path=path,
-            file=filename,
-            custom_path=paths[custom_path],
-            extension=extension))
+    if extensions_white_list(extension):
+        with open(db, 'a+') as my_file:
+            my_file.write('{omxplayer} {custom_path}{file}.{extension}\n'.format(
+                omxplayer=omxplayer,
+                path=path,
+                file=filename,
+                custom_path=paths[custom_path],
+                extension=extension))
 
     return redirect("/{}".format(custom_path))
 
@@ -87,7 +94,7 @@ def remove_from_queue(filename_complete):
 @app.route("/play-all/<custom_path>")
 def playall_custom(custom_path):
     path = paths[custom_path]
-    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and extensions_white_list(f)]
     onlyfiles.sort()
 
     with open(db, 'a+') as my_file:
@@ -102,7 +109,7 @@ def playall_custom(custom_path):
 @app.route("/play-random/<custom_path>")
 def playrandom_custom(custom_path):
     path = paths[custom_path]
-    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and extensions_white_list(f)]
     shuffle(onlyfiles)
 
     with open(db, 'a+') as my_file:
@@ -119,7 +126,7 @@ def playpattern():
     custom_path = request.form['custom_path'] or 'songs'
     label_pattern =  request.form['labelPattern']
     path = paths[custom_path]
-    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and re.search(label_pattern ,f)]
+    onlyfiles = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and re.search(label_pattern ,f) and extensions_white_list(f)]
     onlyfiles.sort()
     with open(db, 'a+') as my_file:
         for filename in onlyfiles:
