@@ -4,10 +4,12 @@ from flask import render_template, redirect, request
 import subprocess
 import datetime
 import sqlite3
-from config import path, paths, omxplayer, db
+from config import path, paths, omxplayer, db, kill_player_cmd
 from random import shuffle
 import re
 import collections
+import psutil
+import signal
 
 app = Flask(__name__)
 
@@ -15,6 +17,15 @@ app = Flask(__name__)
 def get_queue():
     with open(db, 'r') as my_file:
         return my_file.readlines()
+
+def reset_queue():
+    with open(db, 'w') as my_file:
+        my_file.write('')
+
+def kill_player():
+    for proc in psutil.process_iter(attrs=['pid', 'name', 'username']): 
+        if 'omxplayer.bin' in proc.name():
+            os.kill(int(proc.pid), signal.SIGTERM)
 
 def extensions_white_list(my_str_file: str) -> bool:
     """ send only whitelist files to omxplayer """
@@ -136,3 +147,10 @@ def playpattern():
                 file=filename))
 
     return redirect("/{}".format(custom_path))
+
+@app.route('/clear-all')
+def clear_all():
+    """ erase all files in queue and stop any player running """
+    reset_queue()
+    kill_player()
+    return redirect("/")

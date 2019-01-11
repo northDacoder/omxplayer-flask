@@ -59,6 +59,8 @@
     <button data-text="{% if not custom_path %}songs{% else %}{{ custom_path }}{% endif %}" class="btn btn-info" id="button-play-all">Play all</button>
     &nbsp;
     <button data-text="{% if not custom_path %}songs{% else %}{{ custom_path }}{% endif %}"  class="btn btn-info" id="button-play-random">Play random</button>
+    &nbsp;
+    <button class="btn btn-info" id="button-clean-all">Clean all</button>
 </div>
 
 <script>
@@ -67,6 +69,9 @@
     })
     $('#button-play-random').on('click', function() {
         window.location.href = '/play-random/' + this.getAttribute('data-text')
+    })
+    $('#button-clean-all').on('click', function() {
+        window.location.href = '/clear-all'
     })
 </script>
 <!-- END play all and play random -->
