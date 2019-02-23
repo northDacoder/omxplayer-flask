@@ -102,3 +102,6 @@ ENV/
 
 # vim cache
 .swp
+PID_DAEMON
+PID_PLAYER
+nohup.out

@@ -10,14 +10,19 @@ current_command = False
 current_pid = False
 commands = []
 
+
 def add_history(line):
     conn = sqlite3.connect('/run/omxplayer-flask/sqlite3.db')
     c = conn.cursor()
-    filename = line.split('/')[-1]
+    filename = line.split('/')[-3].split(' ')[0]
     c.execute("""
     CREATE TABLE IF NOT EXISTS history (date text, filename text) """)
-    c.execute("""
-    INSERT INTO history VALUES ('{}', '{}')""".format(datetime.datetime.now(), filename))
+    c.execute(
+        "INSERT INTO history VALUES ('{}', '{}')".format(
+            datetime.datetime.now(),
+            filename
+        )
+    )
     conn.commit()
     conn.close()
 
@@ -29,15 +34,22 @@ while True:
             if commands:
                 command = commands[0].strip('\n')
                 current_command = command
-                my_process = subprocess.Popen('{cmd}'.format(cmd=current_command), shell=True)
+                try:
+                    os.mkfifo("/tmp/myfifo")
+                except OSError:
+                    pass
+                my_process = subprocess.Popen(
+                    'echo . > /tmp/myfifo',
+                    shell=True
+                )
+                my_process = subprocess.Popen(
+                    '{cmd}'.format(cmd=current_command),
+                    shell=True
+                )
                 current_pid = my_process.pid
     else:
         poll = my_process.poll()
-        if poll == None:
-            pass
-            #print('Still Executing "{} : {}"'.format(current_command, current_pid))
-        else:
-            #print('End detected')
+        if poll:
             current_pid = False
             current_command = False
             with open(db, 'r') as my_file:

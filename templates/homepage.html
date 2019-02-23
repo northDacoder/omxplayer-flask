@@ -16,11 +16,23 @@
 <body>
 <h1>omxplayer</h1>
 
+<h2>commands</h2>
+
+<button type="button" class="my_commands" data-command="+" >Volume +</button>
+<button type="button" class="my_commands" data-command="-" >Volume -</button>
+<button type="button" class="my_commands" data-command="p" >Pause</button>
+<button type="button" class="my_commands" data-command="k" >Audio</button>
+<button type="button" class="my_commands" data-command="s" >Toggle Subtitles</button>
+<button type="button" class="my_commands" data-command="m" >Next sub</button>
+<button type="button" class="my_commands" data-command="n" >Previous sub</button>
+<button type="button" class="my_commands" data-command="q" >Stop</button>
+
+<p></p>
 {% if queue %}
 	<span class="text-success">File d'attente : </span>
 	{% for my_q in queue %}
 		{% set str2 = my_q.split('/') %}
-		<button type="button" class="btn btn-success">{{ str2[-1] }}</button>
+		<button type="button" class="btn btn-success">{{ str2[-3].split(' ')[0] }}</button>
 	{% endfor %}
 
 	<script>
@@ -41,6 +53,11 @@
 
 		$('button.btn').on('click', function() {
 			window.location.href = '/remove-from-queue/' + this.getAttribute('data-text')
+		})
+
+
+		$('button.my_commands').on('click', function() {
+			window.location.href = '/command/' + this.getAttribute('data-command')
 		})
 	</script>
 {% else %}
