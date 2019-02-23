@@ -38,17 +38,20 @@ while True:
                     os.mkfifo("/tmp/myfifo")
                 except OSError:
                     pass
+                print('avant subprocess')
                 my_process = subprocess.Popen(
                     '{cmd}'.format(cmd=current_command),
                     shell=True
                 )
+                print('avant fifo')
                 f = open("/tmp/myfifo", 'w')
                 f.write('.\n')
                 f.close()
+                print('fin fifo')
                 current_pid = my_process.pid
     else:
         poll = my_process.poll()
-        if poll:
+        if poll is not None:
             current_pid = False
             current_command = False
             with open(db, 'r') as my_file:
