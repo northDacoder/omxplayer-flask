@@ -39,13 +39,12 @@ while True:
                 except OSError:
                     pass
                 my_process = subprocess.Popen(
-                    'echo . > /tmp/myfifo',
-                    shell=True
-                )
-                my_process = subprocess.Popen(
                     '{cmd}'.format(cmd=current_command),
                     shell=True
                 )
+                f = open("/tmp/myfifo", 'w')
+                f.write('.\n')
+                f.close()
                 current_pid = my_process.pid
     else:
         poll = my_process.poll()

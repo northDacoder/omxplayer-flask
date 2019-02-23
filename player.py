@@ -217,10 +217,7 @@ def clear_all():
 
 @app.route("/command/<my_command>")
 def command_to_omxplayer(my_command):
-    subprocess.Popen(
-        'echo -n {my_command} > /tmp/myfifo'.format(
-            my_command=my_command
-        ),
-        shell=True
-    )
+    f = open('/tmp/myfifo', 'w')
+    f.write(my_command)
+    f.close()
     return redirect('/')
