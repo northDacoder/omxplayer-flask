@@ -14,9 +14,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-We only use flask for the moment.
-
-Edit ` config.py `
+Create a `secret.py` file to overwrite config variables.
 
 
 ## launch

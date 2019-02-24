@@ -105,3 +105,4 @@ ENV/
 PID_DAEMON
 PID_PLAYER
 nohup.out
+secret.py
