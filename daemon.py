@@ -1,23 +1,23 @@
+""" daemon to process omxplayer commands """
+
+import datetime
 import os
+import sqlite3
 import subprocess
 import time
-import sqlite3
-import datetime
-from config import db
 
-
-current_command = False
-current_pid = False
-commands = []
+from config import DB
 
 
 def add_history(line):
+    """ add history into DB """
     conn = sqlite3.connect('/run/omxplayer-flask/sqlite3.db')
-    c = conn.cursor()
+    my_c = conn.cursor()
     filename = line.split('/')[-3].split(' ')[0]
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS history (date text, filename text) """)
-    c.execute(
+    my_c.execute(
+        "CREATE TABLE IF NOT EXISTS history (date text, filename text)"
+    )
+    my_c.execute(
         "INSERT INTO history VALUES ('{}', '{}')".format(
             datetime.datetime.now(),
             filename
@@ -27,41 +27,46 @@ def add_history(line):
     conn.close()
 
 
-while True:
-    if not current_pid:
-        with open(db, 'r') as my_file:
-            commands = my_file.readlines()
-            if commands:
-                command = commands[0].strip('\n')
-                current_command = command
-                try:
-                    os.mkfifo("/tmp/myfifo")
-                except OSError:
-                    pass
-                print('avant subprocess')
-                my_process = subprocess.Popen(
-                    '{cmd}'.format(cmd=current_command),
-                    shell=True
-                )
-                print('avant fifo')
-                f = open("/tmp/myfifo", 'w')
-                f.write('.\n')
-                f.close()
-                print('fin fifo')
-                current_pid = my_process.pid
-    else:
-        poll = my_process.poll()
-        if poll is not None:
-            current_pid = False
-            current_command = False
-            with open(db, 'r') as my_file:
+def main():
+    """ main function for this daemon """
+    current_command = False
+    current_pid = False
+    while True:
+        if not current_pid:
+            with open(DB, 'r') as my_file:
                 commands = my_file.readlines()
-            with open(db, 'w') as my_file:
-                firstLine = True
-                for my_command in commands:
-                    if firstLine:
-                        firstLine = False
-                        add_history(my_command)
-                    else:
-                        my_file.write(my_command)
-    time.sleep(5)
+                if commands:
+                    command = commands[0].strip('\n')
+                    current_command = command
+                    try:
+                        os.mkfifo("/tmp/myfifo")
+                    except OSError:
+                        pass
+                    my_process = subprocess.Popen(
+                        '{cmd}'.format(cmd=current_command),
+                        shell=True
+                    )
+                    my_fifo = open("/tmp/myfifo", 'w')
+                    my_fifo.write('.\n')
+                    my_fifo.close()
+                    current_pid = my_process.pid
+        else:
+            poll = my_process.poll()
+            if poll is not None:
+                current_pid = False
+                current_command = False
+                with open(DB, 'r') as my_file:
+                    commands = my_file.readlines()
+                with open(DB, 'w') as my_file:
+                    first_line = True
+                    for my_command in commands:
+                        if first_line:
+                            first_line = False
+                            add_history(my_command)
+                        else:
+                            my_file.write(my_command)
+        time.sleep(5)
+
+
+if __name__ == '__main__':
+    main()
